@@ -1,19 +1,17 @@
-clear all 
-close all
 x=[10000;10000];
-A=[-4,0;
+A=[-2,0;
     0,2];
 B=[1;1];
 [n,n]=size(A);
 X_c=eye(n);
 U_c=eye(1);
 k=dlqr(A,B,X_c,U_c)
-T=5;
-Q_x=1e-3*eye(n);
+T=1000;
+Q_x=1e-2*eye(n);
 noise=sqrt(Q_x)*randn(n,1);
 for t=1:T
     u(t)=-k*x(:,t);
-    x(:,t+1)=A*x(:,t)+B*u(t)+0*noise;
+    x(:,t+1)=A*x(:,t)+B*u(t)+noise;
 end
 plot(1:T+1,x(1,:))
 figure
@@ -40,7 +38,7 @@ R_lambda=1e-2*eye(1);
 % R(:,:,t)=1e-2*eye(1);
 for t=2:T
     phi(:,t)=[x(1,t)^2;x(1,t)*x(2,t);x(2,t)^2;u(t)^2];
-    phi_u=[0;0;0;2*u(t)]
+    phi_u=[0;0;0;2*u(t)];
     phi_x=[2*x(1,t),0;
            x(2,t),x(1,t);
            0,2*x(2,t);
@@ -50,14 +48,14 @@ for t=2:T
     %Prediction
     % 'b'
     w_predict=w_hat(:,1,t-1);
-    P_predict=P_hat(:,:,t-1)+ Q
+    P_predict=P_hat(:,:,t-1)+ Q;
     % display('c')
     %Use of Measurements
-    noise_R=sqrt(R)*randn(1);
+    noise_R=1*sqrt(R)*randn(1);
     y_residual= (F_u'*lambda_hat(:,1,t-1)+noise_R)+phi_u'*w_predict
     % 'd'
     % Kalman Gain
-    S=R + (-phi_u')*P_predict*(-phi_u')'
+    S=R + (-phi_u')*P_predict*(-phi_u')';
     % 'e'
     K=P_predict*(-phi_u')'*S^(-1)
     %Updates
@@ -83,8 +81,4 @@ for t=2:T
 
 end
 w_hat_plot=reshape(w_hat,[n_w,T]);
-figure
-for i=1:n_w
-hold on
-plot(w_hat_plot(i,:))
-end
+plot(w_hat_plot(1,:))
